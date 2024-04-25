@@ -28,8 +28,11 @@ namespace LethalSDK.Converter
                 if (_settings == null)
                 {
                     string[] guids = AssetDatabase.FindAssets("t:LEConverterWindowSettings");
-                    string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                    _settings = AssetDatabase.LoadAssetAtPath<LEConverterWindowSettings>(path);
+                    if (guids.Length > 0 )
+                    {
+                        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                        _settings = AssetDatabase.LoadAssetAtPath<LEConverterWindowSettings>(path);
+                    }
                 }
                 return (_settings);
             }
@@ -61,13 +64,78 @@ namespace LethalSDK.Converter
 
         public static Dictionary<ExtendedContent, string> debugLogs = new Dictionary<ExtendedContent, string>();
 
-        [MenuItem("LethalSDK/LethalExpansion Conversion Tool")]
+        public GUIStyle ButtonStyleUnselected
+        {
+            get
+            {
+                GUIStyle buttonStyleUnselected = new GUIStyle(GUI.skin.GetStyle("Button"));
+                Texture2D unselectedTexture = new Texture2D(1, 1);
+                unselectedTexture.SetPixel(0, 0, WindowSettings.defaultButtonColor);
+                unselectedTexture.Apply();
+                buttonStyleUnselected.normal.background = unselectedTexture;
+                buttonStyleUnselected.alignment = TextAnchor.MiddleCenter;
+                buttonStyleUnselected.richText = true;
+                return (buttonStyleUnselected);
+            }
+        }
+
+        public GUIStyle ButtonStyleSelected
+        {
+            get
+            {
+                GUIStyle buttonStyleSelected = new GUIStyle(GUI.skin.GetStyle("Button"));
+                Texture2D selectedTexture = new Texture2D(1, 1);
+                selectedTexture.SetPixel(0, 0, WindowSettings.selectedButtonColor);
+                selectedTexture.Apply();
+                buttonStyleSelected.normal.background = selectedTexture;
+                buttonStyleSelected.alignment = TextAnchor.MiddleCenter;
+                buttonStyleSelected.richText = true;
+                return (buttonStyleSelected);
+            }
+        }
+
+        public GUIStyle ButtonStyleDisabled
+        {
+            get
+            {
+                GUIStyle buttonStyleDisabled = new GUIStyle(GUI.skin.GetStyle("Button"));
+                Texture2D disabledTexture = new Texture2D(1, 1);
+                disabledTexture.SetPixel(0, 0, WindowSettings.disabledButtonColor);
+                disabledTexture.Apply();
+                buttonStyleDisabled.normal.background = disabledTexture;
+                buttonStyleDisabled.alignment = TextAnchor.MiddleCenter;
+                buttonStyleDisabled.richText = true;
+                return (buttonStyleDisabled);
+            }
+        }
+
+        [MenuItem("Creative Content Converter/LethalExpansion Conversion Tool", true)]
+        public static bool ValidateOpenWindow()
+        {
+            return (WindowSettings != null);
+        }
+
+
+        [MenuItem("Creative Content Converter/Create New Conversion Settings", true)]
+        public static bool ValidateCreateConversionSettings()
+        {
+            return (WindowSettings == null);
+        }
+
+        [MenuItem("Creative Content Converter/LethalExpansion Conversion Tool")]
         public static void OpenWindow()
         {
             if (WindowSettings != null)
             {
                 window = GetWindow<LEConverterWindow>("LethalSDK: LethalExpansion Conversion Tool");
+                //
             }
+        }
+
+        [MenuItem("Creative Content Converter/Create New Conversion Settings")]
+        public static void CreateConversionSettings()
+        {
+            LEConverterWindowSettings.CreateNewSettings();
         }
 
         public void OnGUI()
@@ -79,6 +147,13 @@ namespace LethalSDK.Converter
             }
             GUILayout.ExpandWidth(true);
             GUILayout.ExpandHeight(true);
+
+            if (WindowSettings.scrapItemIcon == null || WindowSettings.handIcon == null || WindowSettings.itemDropshipPrefab == null || WindowSettings.waterSurfacePrefab == null || WindowSettings.diageticMasterMixer == null)
+            {
+                EditorGUILayout.TextField("Required Assets In ConversionSettings Missing, Cannot Load Conversion Tool!");
+                EditorGUILayout.ObjectField(WindowSettings, typeof(LEConverterWindowSettings), true);
+                return;
+            }
 
             EditorGUILayout.Space(5);
             EditorGUILayout.LabelField("General Settings", EditorStyles.boldLabel);
@@ -116,8 +191,19 @@ namespace LethalSDK.Converter
 
             EditorGUILayout.Space(5);
 
+            EditorGUILayout.BeginHorizontal();
+
             EditorGUILayout.LabelField("AssetBundle Assignment Source", EditorStyles.boldLabel);
             WindowSettings.assetBundleAssignmentSetting = (LEConverterWindowSettings.AssetBundleAssignmentSetting)EditorGUILayout.EnumPopup(WindowSettings.assetBundleAssignmentSetting);
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUILayout.LabelField("AssetBundle Variant Setting", EditorStyles.boldLabel);
+            WindowSettings.bundleVariantToggle = (LEConverterWindowSettings.BundleVariantToggle)EditorGUILayout.EnumPopup(WindowSettings.bundleVariantToggle);
+
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Selected Conversion Tool", EditorStyles.boldLabel);
@@ -127,55 +213,31 @@ namespace LethalSDK.Converter
 
             EditorGUILayout.BeginHorizontal(newStyle);
 
-            GUIStyle buttonStyleUnselected = new GUIStyle(GUI.skin.GetStyle("Button"));
-            Texture2D unselectedTexture = new Texture2D(1, 1);
-            unselectedTexture.SetPixel(0, 0, WindowSettings.defaultButtonColor);
-            unselectedTexture.Apply();
-            buttonStyleUnselected.normal.background = unselectedTexture;
-            buttonStyleUnselected.alignment = TextAnchor.MiddleCenter;
-            buttonStyleUnselected.richText = true;
-
-            GUIStyle buttonStyleSelected = new GUIStyle(GUI.skin.GetStyle("Button"));
-            Texture2D selectedTexture = new Texture2D(1, 1);
-            selectedTexture.SetPixel(0, 0, WindowSettings.selectedButtonColor);
-            selectedTexture.Apply();
-            buttonStyleSelected.normal.background = selectedTexture;
-            buttonStyleSelected.alignment = TextAnchor.MiddleCenter;
-            buttonStyleSelected.richText = true;
-
-            GUIStyle buttonStyleDisabled = new GUIStyle(GUI.skin.GetStyle("Button"));
-            Texture2D disabledTexture = new Texture2D(1, 1);
-            disabledTexture.SetPixel(0, 0, WindowSettings.disabledButtonColor);
-            disabledTexture.Apply();
-            buttonStyleDisabled.normal.background = disabledTexture;
-            buttonStyleDisabled.alignment = TextAnchor.MiddleCenter;
-            buttonStyleDisabled.richText = true;
-
             if (windowMode == WindowMode.Moons)
             {
-                if (GUILayout.Button("Moons".Colorize(Color.white).Bold(), buttonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Moons".Colorize(Color.white).Bold(), ButtonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Moons;
-                if (GUILayout.Button("Scrap".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Scrap".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Scraps;
-                if (GUILayout.Button("Asset Bundles".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Asset Bundles".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.AssetBundles;
             }
             else if (windowMode == WindowMode.Scraps)
             {
-                if (GUILayout.Button("Moons".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Moons".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Moons;
-                if (GUILayout.Button("Scrap".Colorize(Color.white).Bold(), buttonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Scrap".Colorize(Color.white).Bold(), ButtonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Scraps;
-                if (GUILayout.Button("Asset Bundles".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Asset Bundles".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.AssetBundles;
             }
             else
             {
-                if (GUILayout.Button("Moons".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Moons".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Moons;
-                if (GUILayout.Button("Scrap".Colorize(Color.white), buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Scrap".Colorize(Color.white), ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.Scraps;
-                if (GUILayout.Button("Asset Bundles".Colorize(Color.white).Bold(), buttonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
+                if (GUILayout.Button("Asset Bundles".Colorize(Color.white).Bold(), ButtonStyleSelected, GUILayout.ExpandHeight(false), GUILayout.Width(120)))
                     windowMode = WindowMode.AssetBundles;
             }
 
@@ -246,11 +308,11 @@ namespace LethalSDK.Converter
 
                 if (foundAtleastOneMoon == true && !string.IsNullOrEmpty(WindowSettings.modsRootDirectory) && !string.IsNullOrEmpty(WindowSettings.assetRipGameRootDirectory))
                 {
-                    if (GUILayout.Button("Convert Moons", buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(240)))
+                    if (GUILayout.Button("Convert Moons", ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(240)))
                         ConvertMoons(WindowSettings.modsRootDirectory, new List<Moon>(WindowSettings.moonList));
                 }
                 else
-                    GUILayout.Button("Convert Moons", buttonStyleDisabled, GUILayout.ExpandHeight(false), GUILayout.Width(240));
+                    GUILayout.Button("Convert Moons", ButtonStyleDisabled, GUILayout.ExpandHeight(false), GUILayout.Width(240));
             }
 
             //////////////////// SCRAP SETTINGS ////////////////////
@@ -317,11 +379,11 @@ namespace LethalSDK.Converter
 
                 if (foundAtleastOneScrap == true && !string.IsNullOrEmpty(WindowSettings.modsRootDirectory) && !string.IsNullOrEmpty(WindowSettings.assetRipGameRootDirectory))
                 {
-                    if (GUILayout.Button("Convert Scrap", buttonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(240)))
+                    if (GUILayout.Button("Convert Scrap", ButtonStyleUnselected, GUILayout.ExpandHeight(false), GUILayout.Width(240)))
                         ConvertItems(WindowSettings.modsRootDirectory, WindowSettings.scrapList);
                 }
                 else
-                    GUILayout.Button("Convert Scrap", buttonStyleDisabled, GUILayout.ExpandHeight(false), GUILayout.Width(240));
+                    GUILayout.Button("Convert Scrap", ButtonStyleDisabled, GUILayout.ExpandHeight(false), GUILayout.Width(240));
 
             }
 
@@ -369,7 +431,7 @@ namespace LethalSDK.Converter
             debugLogs.Clear();
 
             WindowSettings.GetExtendedMods();
-            SelectableLevelConverter.PopulateReferenceLists(WindowSettings);
+            SelectableLevelConverter.PopulateReferenceLists(WindowSettings.modsRootDirectory);
             ExtendedLevel lastCreatedExtendedLevel = null;
 
             foreach (ExtendedMod extendedMod in WindowSettings.extendedModList)
@@ -380,12 +442,13 @@ namespace LethalSDK.Converter
             foreach (Moon moon in moonList)
                 if (moon != null)
                 {
-                    EditorUtility.DisplayProgressBar("Converting Moons", "Converting Moon: " + moon.MoonName + " (" + convertedLevels.Count + " / " + moonList.Count + ")", (float)(convertedLevels.Count / moonList.Count));
+                    //EditorUtility.DisplayProgressBar("Converting Moons", "Converting Moon: " + moon.MoonName + " (" + convertedLevels.Count + " / " + moonList.Count + ")", (float)(convertedLevels.Count / moonList.Count));
+                    UpdateProgress("Converting Moons", "Converting Moon: " + moon.MoonName + " (" + convertedLevels.Count + " / " + moonList.Count + ")", (float)(convertedLevels.Count / moonList.Count));
                     lastCreatedExtendedLevel = ConvertMoon(modRootDirectory, moon);
                     convertedLevels.Add(lastCreatedExtendedLevel);
                 }
-            EditorUtility.ClearProgressBar();
-
+            //EditorUtility.ClearProgressBar();
+            ClearProgress();
             RefreshAssetDatabase();
 
             if (lastCreatedExtendedLevel != null)
@@ -408,7 +471,7 @@ namespace LethalSDK.Converter
             debugLogs.Clear();
 
             WindowSettings.GetExtendedMods();
-            SelectableLevelConverter.PopulateReferenceLists(WindowSettings);
+            SelectableLevelConverter.PopulateReferenceLists(WindowSettings.modsRootDirectory);
             ScrapConverter.GetDefaultAudioClips();
 
             foreach (ExtendedMod extendedMod in WindowSettings.extendedModList)
@@ -422,11 +485,13 @@ namespace LethalSDK.Converter
             foreach (Scrap scrap in scrapList)
                 if (scrap != null)
                 {
-                    EditorUtility.DisplayProgressBar("Converting Scrap", "Converting Scrap: " + scrap.itemName + " (" + convertedItems.Count + " / " + scrapList.Count + ")", (float)(convertedItems.Count / scrapList.Count));
+                    //EditorUtility.DisplayProgressBar("Converting Scrap", "Converting Scrap: " + scrap.itemName + " (" + convertedItems.Count + " / " + scrapList.Count + ")", (float)(convertedItems.Count / scrapList.Count));
+                    UpdateProgress("Converting Scrap", "Converting Scrap: " + scrap.itemName + " (" + convertedItems.Count + " / " + scrapList.Count + ")", (float)(convertedItems.Count / scrapList.Count));
                     lastCreatedExtendedItem = ConvertItem(modRootDirectory, scrap);
                     convertedItems.Add(lastCreatedExtendedItem);
                 }
-            EditorUtility.ClearProgressBar();
+            //EditorUtility.ClearProgressBar();
+            ClearProgress();
 
             RefreshAssetDatabase();
 
@@ -761,8 +826,16 @@ namespace LethalSDK.Converter
 
         public static void AssignAssetBundleLabels(string modName, string modContentDirectory, string modSceneAssetPath)
         {
-            AssignAssetBundleLabelToAsset(modContentDirectory, modName.ToLower(), "lethalbundle");
-            AssignAssetBundleLabelToAsset(modSceneAssetPath, modName.ToLower() + "scenes", "lethalbundle");
+            if (WindowSettings.bundleVariantToggle == LEConverterWindowSettings.BundleVariantToggle.Lethalbundle)
+            {
+                AssignAssetBundleLabelToAsset(modContentDirectory, modName.ToLower(), "lethalbundle");
+                AssignAssetBundleLabelToAsset(modSceneAssetPath, modName.ToLower() + "scenes", "lethalbundle");
+            }
+            else
+            {
+                AssignAssetBundleLabelToAsset(modContentDirectory, modName.ToLower(), null);
+                AssignAssetBundleLabelToAsset(modSceneAssetPath, modName.ToLower() + "scenes", null);
+            }
         }
 
         public static void AssignAssetBundleLabelToAsset(string assetPath, (string,string) assetBundleNames)
@@ -827,6 +900,7 @@ namespace LethalSDK.Converter
 
         public static bool GetOrCreateFolder(string path, string folder, out string folderPath)
         {
+            Debug.Log("Trying To Create Folder: " + path + "/" + folder);
             folderPath = path + "/" + folder;
             if (AssetDatabase.IsValidFolder(path + "/" + folder))
             {
@@ -967,6 +1041,49 @@ namespace LethalSDK.Converter
             {
                 Debug.LogError("Info Could Not Be Logged");
             }
+        }
+
+        public static void UpdateProgress(string progressHeader, string progressDescription, float progressPercentage)
+        {
+            if (progressInfo == null)
+            {
+                progressInfo = new ProgressInfo(progressHeader, progressDescription, progressPercentage);
+                EditorApplication.update += RerefreshProgress;
+            }
+            else
+            {
+                progressInfo.progressHeader = progressHeader;
+                progressInfo.progressDescrption = progressDescription;
+                progressInfo.progressPercentage = progressPercentage;
+            }    
+        }
+
+        public static void ClearProgress()
+        {
+            progressInfo = null;
+            EditorApplication.update -= RerefreshProgress;
+        }
+
+        public static ProgressInfo progressInfo;
+
+        public static void RerefreshProgress()
+        {
+            if (progressInfo != null)
+                EditorUtility.DisplayProgressBar(progressInfo.progressHeader, progressInfo.progressDescrption, progressInfo.progressPercentage);
+        }
+    }
+
+    public class ProgressInfo
+    {
+        public string progressHeader;
+        public string progressDescrption;
+        public float progressPercentage;
+
+        public ProgressInfo(string progressHeader, string progressDescrption, float progressPercentage)
+        {
+            this.progressHeader = progressHeader;
+            this.progressDescrption = progressDescrption;
+            this.progressPercentage = progressPercentage;
         }
     }
 }

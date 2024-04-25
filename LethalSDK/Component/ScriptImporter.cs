@@ -234,7 +234,7 @@ namespace LethalSDK.Component
                 this.tag = "DungeonGenerator";
             }
             RuntimeDungeon runtimeDungeon = this.gameObject.AddComponent<RuntimeDungeon>();
-            runtimeDungeon.Generator.DungeonFlow = RoundManager.Instance.dungeonFlowTypes[0];
+            //runtimeDungeon.Generator.DungeonFlow = RoundManager.Instance.dungeonFlowTypes[0];
             runtimeDungeon.Generator.LengthMultiplier = 0.8f;
             runtimeDungeon.Generator.PauseBetweenRooms = 0.2f;
             runtimeDungeon.GenerateOnStart = false;
@@ -245,7 +245,7 @@ namespace LethalSDK.Component
                 DungeonRoot.transform.position = new Vector3(0, -200, 0);
             }
             runtimeDungeon.Root = DungeonRoot;
-            runtimeDungeon.Generator.DungeonFlow = RoundManager.Instance.dungeonFlowTypes[0];
+            //runtimeDungeon.Generator.DungeonFlow = RoundManager.Instance.dungeonFlowTypes[0];
             UnityNavMeshAdapter dungeonNavMesh = this.gameObject.AddComponent<UnityNavMeshAdapter>();
             dungeonNavMesh.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
             dungeonNavMesh.LayerMask = 35072; //256 + 2048 + 32768 = 35072

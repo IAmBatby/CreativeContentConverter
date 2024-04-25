@@ -8,6 +8,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Video;
 using static UnityEditor.Progress;
 
@@ -22,9 +23,30 @@ namespace LethalSDK.Conversions
         public static List<ModManifest> manifests = new List<ModManifest>();
         public static List<AudioClip> audioClips = new List<AudioClip>();
         public static List<ExtendedItem> extendedItems = new List<ExtendedItem>();
+        public static List<AudioMixerGroup> audioMixers = new List<AudioMixerGroup>();
+        public static List<Sprite> sprites = new List<Sprite>();
 
-        public static void PopulateReferenceLists(LEConverterWindowSettings settings)
+        [InitializeOnLoadMethod]
+        public static void ForcePopulate()
         {
+            prefabs.Clear();
+            selectableLevels.Clear();
+            items.Clear();
+            enemyTypes.Clear();
+            manifests.Clear();
+            audioClips.Clear();
+            extendedItems.Clear();
+            sprites.Clear();
+            //
+            if (LEConverterWindow._settings != null)
+                PopulateReferenceLists(LEConverterWindow.WindowSettings.modsRootDirectory);
+            else
+                PopulateReferenceLists("Assets/LethalCompany/Mods/");
+        }
+
+        public static void PopulateReferenceLists(string blacklistedPath)
+        {
+            //blacklistedPath = string.Empty;
             if (items.Count == 0)
             {
                 items = new List<Item>();
@@ -32,7 +54,7 @@ namespace LethalSDK.Conversions
                 foreach (string guid in itemGuids)
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guid);
-                    if (!path.Contains(settings.modsRootDirectory))
+                    if (!path.Contains(blacklistedPath))
                     {
                         Item item = (Item)AssetDatabase.LoadAssetAtPath<Item>(path);
                         items.Add(item);
@@ -58,7 +80,7 @@ namespace LethalSDK.Conversions
                 foreach (string guid in enemyGuids)
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guid);
-                    if (!path.Contains(settings.modsRootDirectory))
+                    if (!path.Contains(blacklistedPath))
                     {
                         EnemyType enemyType = (EnemyType)AssetDatabase.LoadAssetAtPath<EnemyType>(path);
                         enemyTypes.Add(enemyType);
@@ -76,7 +98,7 @@ namespace LethalSDK.Conversions
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     if (!string.IsNullOrEmpty(path))
                     {
-                        if (!path.Contains(settings.modsRootDirectory))
+                        if (!path.Contains(blacklistedPath))
                         {
                             SelectableLevel level = AssetDatabase.LoadAssetAtPath<SelectableLevel>(path);
                             if (level != null)
@@ -99,7 +121,7 @@ namespace LethalSDK.Conversions
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     if (!string.IsNullOrEmpty(path))
                     {
-                        if (!path.Contains(settings.modsRootDirectory))
+                        if (!path.Contains(blacklistedPath))
                         {
                             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                             if (prefab != null)
@@ -137,12 +159,52 @@ namespace LethalSDK.Conversions
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     if (!string.IsNullOrEmpty(path))
                     {
-                        AudioClip audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-                        if (audioClip != null)
-                            audioClips.Add(audioClip);
+                        if (!path.Contains(blacklistedPath))
+                        {
+                            AudioClip audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                            if (audioClip != null)
+                                audioClips.Add(audioClip);
+                        }
                     }
                 }
-                    
+            }
+
+            if (audioMixers.Count == 0)
+            {
+                audioMixers = new List<AudioMixerGroup>();
+                string[] audioMixerGuids = AssetDatabase.FindAssets("t:AudioMixerGroup");
+                foreach (string guid in audioMixerGuids)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        if (!path.Contains(blacklistedPath))
+                        {
+                            AudioMixerGroup audioMixer = AssetDatabase.LoadAssetAtPath<AudioMixerGroup>(path);
+                            if (audioMixer != null)
+                                audioMixers.Add(audioMixer);
+                        }
+                    }
+                }
+            }
+
+            if (sprites.Count == 0)
+            {
+                sprites = new List<Sprite>();
+                string[] spriteGuids = AssetDatabase.FindAssets("t:Sprite");
+                foreach (string guid in spriteGuids)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        if (!path.Contains(blacklistedPath))
+                        {
+                            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                            if (sprite != null)
+                                sprites.Add(sprite);
+                        }
+                    }
+                }
             }
 
             //AssetDatabase.Refresh();
@@ -170,7 +232,7 @@ namespace LethalSDK.Conversions
 
             //Primary Search
             foreach (KeyValuePair<string, GameObject> keyValuePair in potentialPlanetPrefabsDict)
-                if (moon.OrbitPrefabName.SkipToLetters().RemoveWhitespace().ToLower() ==  keyValuePair.Key)
+                if (moon.OrbitPrefabName.SkipToLetters().RemoveWhitespace().ToLower() == keyValuePair.Key)
                     selectableLevel.planetPrefab = keyValuePair.Value;
 
             //Secondary Search
@@ -284,7 +346,7 @@ namespace LethalSDK.Conversions
             if (selectableLevel.spawnableScrap.Count == 0)
             {
                 Debug.LogError("No Scrap In List Found! Adding Temp To Avoid Crash!");
-                foreach(Item item in items)
+                foreach (Item item in items)
                     if (item.name == "Bell")
                     {
                         SpawnableItemWithRarity spawnableItemWithRarity = new SpawnableItemWithRarity();
@@ -292,7 +354,7 @@ namespace LethalSDK.Conversions
                         spawnableItemWithRarity.rarity = 0;
                         selectableLevel.spawnableScrap.Add(spawnableItemWithRarity);
                         break;
-                    }    
+                    }
             }
 
             //Spawnable Map & Outside Values
@@ -311,15 +373,15 @@ namespace LethalSDK.Conversions
             }
 
             foreach (SpawnableMapObjectPair spawnableMapObjectPair in moon.SpawnableMapObjects())
-                    foreach (GameObject spawnableMapObject in spawnableMapObjectPrefabs)
-                        if (spawnableMapObjectPair.ObjectName == spawnableMapObject.name)
-                        {
-                            SpawnableMapObject newSpawnableMapObject = new SpawnableMapObject();
-                            newSpawnableMapObject.prefabToSpawn = spawnableMapObject;
-                            newSpawnableMapObject.spawnFacingAwayFromWall = spawnableMapObjectPair.SpawnFacingAwayFromWall;
-                            newSpawnableMapObject.numberToSpawn = spawnableMapObjectPair.SpawnRate;
-                            spawnableMapObjects.Add(newSpawnableMapObject);
-                        }
+                foreach (GameObject spawnableMapObject in spawnableMapObjectPrefabs)
+                    if (spawnableMapObjectPair.ObjectName == spawnableMapObject.name)
+                    {
+                        SpawnableMapObject newSpawnableMapObject = new SpawnableMapObject();
+                        newSpawnableMapObject.prefabToSpawn = spawnableMapObject;
+                        newSpawnableMapObject.spawnFacingAwayFromWall = spawnableMapObjectPair.SpawnFacingAwayFromWall;
+                        newSpawnableMapObject.numberToSpawn = spawnableMapObjectPair.SpawnRate;
+                        spawnableMapObjects.Add(newSpawnableMapObject);
+                    }
 
             List<SpawnableOutsideObjectWithRarity> spawnableOutsideObjectWithRarities = new List<SpawnableOutsideObjectWithRarity>();
             foreach (SpawnableOutsideObjectPair spawnableOutsideObjectPair in moon.SpawnableOutsideObjects())
@@ -436,12 +498,12 @@ namespace LethalSDK.Conversions
             enemySpawnValue = enemySpawnValue * 2;
             targetLevelRating += enemySpawnValue;
 
-            int enemyValue = 0;
+            float enemyValue = 0;
             foreach (SpawnableEnemyWithRarity spawnableEnemy in selectableLevel.Enemies.Concat(selectableLevel.OutsideEnemies).Concat(selectableLevel.DaytimeEnemies))
                 if (spawnableEnemy.rarity != 0)
                     if ((spawnableEnemy.rarity / 10) != 0)
                         enemyValue += (spawnableEnemy.enemyType.PowerLevel * 100) / (spawnableEnemy.rarity / 10);
-            targetLevelRating += enemyValue;
+            targetLevelRating += (int)enemyValue;
             targetLevelRating += Mathf.RoundToInt(targetLevelRating * (selectableLevel.factorySizeMultiplier * 0.5f));
 
             return (targetLevelRating);

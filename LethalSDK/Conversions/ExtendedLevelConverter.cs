@@ -12,10 +12,10 @@ namespace LethalSDK.Conversions
         {
             extendedLevel.selectableLevel = selectableLevel;
             extendedLevel.ForceSetRoutePrice(moon.RoutePrice);
-            extendedLevel.isHidden = moon.IsHidden;
-            extendedLevel.isLocked = moon.IsLocked;
-            extendedLevel.overrideRouteConfirmNodeDescription = moon.BoughtComment;
-            extendedLevel.overrideInfoNodeDescription = moon.PlanetLore;
+            extendedLevel.IsRouteHidden = moon.IsHidden;
+            extendedLevel.IsRouteLocked = moon.IsLocked;
+            extendedLevel.OverrideRouteConfirmNodeDescription = moon.BoughtComment;
+            extendedLevel.OverrideInfoNodeDescription = moon.PlanetLore;
             extendedLevel.contentSourceName = moonManifest.author;
         }
     }

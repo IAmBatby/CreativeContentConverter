@@ -33,6 +33,7 @@ namespace LethalSDK.Conversions
             dungeonNavMesh.LayerMask = 35072; //256 + 2048 + 32768 = 35072
 
             return (true);
+            ///
         }
     }
 }

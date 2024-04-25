@@ -33,5 +33,34 @@ namespace LethalSDK
 
             return returnString;
         }
+
+        public static string FirstToUpper(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            char[] chars = input.ToCharArray();
+            if (char.IsLetter(chars[0]))
+                chars[0] = char.ToUpper(chars[0]);
+            return (new string(chars));
+        }
+
+        public static string UpperFirstLetters(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            bool upperNextChar = false;
+            char[] chars = input.ToCharArray();
+
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (!char.IsLetter(chars[i]))
+                    upperNextChar = true;
+                if (char.IsLetter(chars[i]) && upperNextChar == true)
+                {
+                    chars[i] = char.ToUpper(chars[i]);
+                    upperNextChar = false;
+                }
+            }
+
+            return (new string(chars));
+        }
     }
 }
