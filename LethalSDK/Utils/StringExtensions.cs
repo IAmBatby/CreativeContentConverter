@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace LethalSDK
 {
@@ -61,6 +62,23 @@ namespace LethalSDK
             }
 
             return (new string(chars));
+        }
+
+        public static string ToBold(this string input)
+        {
+            return new string("<b>" + input + "</b>");
+        }
+
+        public static string Colorize(this string input)
+        {
+            string hexColor = "#" + "FFFFFF";
+            return new string("<color=" + hexColor + ">" + input + "</color>");
+        }
+
+        public static string Colorize(this string input, Color color)
+        {
+            string hexColor = "#" + ColorUtility.ToHtmlStringRGB(color);
+            return new string("<color=" + hexColor + ">" + input + "</color>");
         }
     }
 }

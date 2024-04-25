@@ -91,7 +91,7 @@ namespace LethalSDK.Conversions
 
             item.itemId = 0;
             item.holdButtonUse = false;
-            item.highestSalePercentage = item.maxValue;
+            item.highestSalePercentage = 80;
             item.floorYOffset = 0;
             item.allowDroppingAheadOfPlayer = true;
             item.grabAnimationTime = 0;

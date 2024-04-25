@@ -31,7 +31,7 @@ namespace LethalSDK.Conversions
                 if (newMatchingProperties == null)
                     newMatchingProperties = CreateNewMatchingProperties(LEConverterWindow.GetSanitisedScrapName(scrap));
                 foreach (ScrapSpawnChancePerScene scrapSpawnChancePerScene in scrap.perPlanetSpawnWeight())
-                        if (!string.IsNullOrEmpty(scrapSpawnChancePerScene.SceneName) && scrapSpawnChancePerScene.SpawnWeight != 0)
+                        if (!string.IsNullOrEmpty(scrapSpawnChancePerScene.SceneName) && scrapSpawnChancePerScene.SceneName != "Others" && scrapSpawnChancePerScene.SpawnWeight != 0)
                             newMatchingProperties.planetNames.Add(new StringWithRarity(scrapSpawnChancePerScene.SceneName, scrapSpawnChancePerScene.SpawnWeight));
             }
 

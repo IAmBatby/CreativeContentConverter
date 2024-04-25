@@ -33,9 +33,6 @@
     <Reference Include="LethalLevelLoader">
       <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\LethalLevelLoader\LethalLevelLoader.dll</HintPath>
     </Reference>
-    <Reference Include="LethalToolkit">
-      <HintPath>..\..\_GITHUB\WesleysMoons\Assets\LethalCompany\Tools\Plugins\LethalToolkit\LethalToolkit.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.AI.Navigation">
       <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.AI.Navigation.dll</HintPath>
     </Reference>
